@@ -33,8 +33,8 @@ def reload_cookies(url):
     sleep(2)
 
     # @ Action.
-    nav_link = driver.find_element(By.ID, "nav-link")
-    driver.execute_script("arguments[0].click();", nav_link)
+    # nav_link = driver.find_element(By.ID, "nav-link")
+    # driver.execute_script("arguments[0].click();", nav_link)
 
     # : Get the Cookies & Headers
     current_login_cookie = driver.get_cookies()
@@ -150,9 +150,9 @@ def crawl_bfs(root_url, max_depth):
 if __name__ == "__main__":
     
     # : default setting
-    root_url = "https://military.ncu.edu.tw/index.php"
-    save_file_name = "military_result.json"
-    max_depth = 2
+    root_url = "https://w2.math.ncu.edu.tw/"
+    save_file_name = "math_result.json"
+    max_depth = 1
     
     print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}")
     
