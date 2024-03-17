@@ -107,7 +107,6 @@ def crawl_ncu_bs4(url, cookies, headers):
         
     return '', '', []
 
-
 def crawl_ncu_selenium(url):
     
     _, _, driver = reload_cookies(url, type_value="selenium")
@@ -144,7 +143,7 @@ def crawl_bfs(root_url, max_depth, type_value="bs4"):
                     title: string,
                     depth: int,
                     content: string,
-                    links: string
+                    links: [(string, string)]
                 }
     '''
 
@@ -192,12 +191,12 @@ if __name__ == "__main__":
     # : default setting
     root_url = "http://lrn.ncu.edu.tw/"
     save_file_name = "result.json"
-    max_depth = 1
+    max_depth = 2
     
     print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}, 深度: {max_depth}")
     
     # @ main function
-    crawlers_results =  crawl_bfs(root_url, max_depth) # type_value="selenium" or "bs4"
+    crawlers_results =  crawl_bfs(root_url, max_depth, type_value="bs4") # type_value="selenium" or "bs4"
     
     with open(save_file_name, 'w', encoding='utf-8') as f:    
         json.dump(crawlers_results, f, ensure_ascii=False, indent=4)

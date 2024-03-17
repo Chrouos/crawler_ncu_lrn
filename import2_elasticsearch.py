@@ -1,4 +1,5 @@
 from elasticsearch import Elasticsearch, helpers
+from gensim.models import Word2Vec
 import json
 import sys
 
@@ -64,8 +65,8 @@ def load2_elasticsearch(index_name, es, data_name):
 
 if __name__ == "__main__":
     # : Connect Setting
-    index_name = 'ncu_math' # = create name.
+    index_name = 'ncu_lrn' # = create name.
     es = Elasticsearch(hosts=["http://localhost:9200"])
     
-    # delete_elasticsearch_index(index_name, es)
+    delete_elasticsearch_index(index_name, es)
     load2_elasticsearch(index_name, es, data_name=f"result.json")
