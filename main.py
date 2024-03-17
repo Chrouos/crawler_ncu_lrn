@@ -1,3 +1,5 @@
+import traceback
+
 from seleniumwire import webdriver  
 from fake_useragent import UserAgent
 from selenium.webdriver.common.by import By
@@ -12,7 +14,7 @@ from collections import deque
 import re
 import json
 
-def reload_cookies(url):
+def reload_cookies(url, type_value="bs4"):
     
     # : user agent setting
     ua = UserAgent()
@@ -32,9 +34,10 @@ def reload_cookies(url):
     driver.get(url)
     sleep(2)
 
-    # @ Action.
-    # nav_link = driver.find_element(By.ID, "nav-link")
-    # driver.execute_script("arguments[0].click();", nav_link)
+    # # : driver get the title, content, links
+    # driver_title = driver.title if type == "selenium" else ""
+    # driver_content = driver.find_element(By.TAG_NAME, "body").text if type == "selenium" else ""
+    # driver_all_links_elements = driver.find_elements(By.XPATH, "//a[@href]") if type == "selenium" else ""
 
     # : Get the Cookies & Headers
     current_login_cookie = driver.get_cookies()
@@ -45,15 +48,15 @@ def reload_cookies(url):
         if request.url == url:
             headers = {k: v for k, v in request.headers.items()}
 
-    print("Cookies:", current_login_cookie)
-    print("Headers:", headers)
+    # print("Cookies:", current_login_cookie)
+    # print("Headers:", headers)
 
     sleep(5)
-    driver.quit()
+    if type_value == "bs4": driver.quit()
     
-    return current_login_cookie, headers
+    return current_login_cookie, headers, driver
 
-def crawl_ncu(url, cookies, headers):
+def crawl_ncu_bs4(url, cookies, headers):
     try:
         with requests.Session() as session: 
         # ~ Session can update the performance of the server. 
@@ -99,11 +102,42 @@ def crawl_ncu(url, cookies, headers):
     except requests.RequestException as e:
         print('Request error:', e)
     except Exception as e:
+        traceback.print_exc()
         print("Exception:", e)
         
     return '', '', []
 
-def crawl_bfs(root_url, max_depth):
+
+def crawl_ncu_selenium(url):
+    
+    _, _, driver = reload_cookies(url, type_value="selenium")
+    
+    # : driver get the title, content, links
+    driver_title = driver.title 
+    driver_content = driver.find_element(By.TAG_NAME, "body").text 
+    driver_all_links_elements = driver.find_elements(By.XPATH, "//a[@href]") 
+    
+    links = []
+    for element in driver_all_links_elements:
+        
+        href = element.get_attribute('href')
+        text = element.text.strip()
+
+        if href:
+            # 確保連結是完整的 URL
+            if "http" not in href:
+                href = f"{url}/{href}" if href[0] != "/" else f"{url}{href}"
+
+            if text == "":
+                # 如果連結文本為空，嘗試獲取 title 屬性
+                text = element.get_attribute('title').strip()
+
+            links.append((text, href))
+            
+    driver.quit()
+    return driver_title, driver_content, links
+
+def crawl_bfs(root_url, max_depth, type_value="bs4"):
     '''
         return  {   
                     url: string,
@@ -119,18 +153,18 @@ def crawl_bfs(root_url, max_depth):
     results = []
     
     current_url, depth = root_url, 0
-    cookies, headers = reload_cookies(root_url)
+    cookies, headers, _ = reload_cookies(root_url) if type_value == "bs4" else ("", "", {})
     dq = deque([(current_url, depth)]) # = 暫存器
     
     while dq:
         try:
-            current_url, depth = dq.popleft()
+            current_url, depth = dq.popleft() 
         
             if depth > max_depth: break # + 停止條件：達到指定的最大深度
             if current_url in visited: continue # + 如果該 URL 已經訪問過，跳過
             
             # @ Get the elements of the site. (all the links)
-            title, content, links = crawl_ncu(current_url, cookies, headers)
+            title, content, links = crawl_ncu_bs4(current_url, cookies, headers) if type_value == "bs4" else crawl_ncu_selenium(current_url)
             if title and content and links:
                 print("Depth:", depth, "URL:", current_url)
                     
@@ -143,7 +177,10 @@ def crawl_bfs(root_url, max_depth):
                 results.append({'url': current_url, 'title': title, 'depth':depth, 'content': content, 'links': links})
         
         except Exception as e:
-            cookies, headers = reload_cookies(current_url)
+            traceback.print_exc()
+            cookies, headers, _ = reload_cookies(root_url) if type_value == "bs4" else ("", "", {})
+            
+            print(e)
             
     return results
 
@@ -157,7 +194,7 @@ if __name__ == "__main__":
     print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}")
     
     # @ main function
-    crawlers_results =  crawl_bfs(root_url, max_depth)
+    crawlers_results =  crawl_bfs(root_url, max_depth, type_value="selenium")
     
     with open(save_file_name, 'w', encoding='utf-8') as f:    
         json.dump(crawlers_results, f, ensure_ascii=False, indent=4)
