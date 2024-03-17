@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from time import sleep
+from time import sleep, time
 
 import requests
 from bs4 import BeautifulSoup
@@ -186,19 +186,27 @@ def crawl_bfs(root_url, max_depth, type_value="bs4"):
 
 if __name__ == "__main__":
     
+    # @ Start
+    start_time = time.time()
+    
     # : default setting
-    root_url = "https://w2.math.ncu.edu.tw/"
-    save_file_name = "math_result.json"
+    root_url = "http://lrn.ncu.edu.tw/"
+    save_file_name = "result.json"
     max_depth = 1
     
-    print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}")
+    print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}, 深度: {max_depth}")
     
     # @ main function
-    crawlers_results =  crawl_bfs(root_url, max_depth, type_value="selenium")
+    crawlers_results =  crawl_bfs(root_url, max_depth) # type_value="selenium" or "bs4"
     
     with open(save_file_name, 'w', encoding='utf-8') as f:    
         json.dump(crawlers_results, f, ensure_ascii=False, indent=4)
         print(f"{len(crawlers_results)} of data were successfully saved")
+        
+    # @ Done
+    end_time = time.time()
+    print(f"總共花費時間：{end_time - start_time}秒")
+
         
     
     

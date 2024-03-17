@@ -6,7 +6,7 @@ from pprint import pprint
 def query(item, query):
     
     # : Connect Setting
-    index_name = 'ncu_military' # = create name.
+    index_name = 'ncu_math' # = create name.
     es = Elasticsearch(hosts=["http://localhost:9200"])
     
     type = 'one_to_one'

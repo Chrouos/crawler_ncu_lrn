@@ -68,4 +68,4 @@ if __name__ == "__main__":
     es = Elasticsearch(hosts=["http://localhost:9200"])
     
     # delete_elasticsearch_index(index_name, es)
-    load2_elasticsearch(index_name, es, data_name=f"math_result.json")
+    load2_elasticsearch(index_name, es, data_name=f"result.json")
