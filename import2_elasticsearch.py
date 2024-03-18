@@ -3,6 +3,8 @@ from gensim.models import Word2Vec
 import json
 import sys
 
+from model.sentence_embedding import compute_sentence_embeddings
+
 '''
 data = {
         'url': text,
@@ -29,16 +31,30 @@ hp_mapping = {
         },
         "links": {
             "type": "text"
+        },
+        "vector": {
+            "type": "dense_vector",
+            "dims": 384,
+            "index": True, 
+            "similarity": "l2_norm"
         }
     }
 }
 
 # Load dataset
 def read_data(data_name):
-    with open(data_name, 'r' ,encoding='utf-8') as f:
+    
+    row_list = []
+    with open(data_name, 'r', encoding='utf-8') as f:
         data = json.load(f)
         for row in data:
-            yield row
+            # ~ 計算content的嵌入向量
+            embeddings = compute_sentence_embeddings([row['content']])
+            embeddings_list = embeddings[0].tolist()
+            row['vector'] = embeddings_list
+            row_list.append(row)
+
+    return row_list
 
 def delete_elasticsearch_index(index_name, es):
     
@@ -50,6 +66,7 @@ def delete_elasticsearch_index(index_name, es):
         print('Delete Index:', response)
 
 def load2_elasticsearch(index_name, es, data_name):
+    
 
     # @ Create Index with mappings
     if not es.indices.exists(index=index_name):
@@ -65,7 +82,7 @@ def load2_elasticsearch(index_name, es, data_name):
 
 if __name__ == "__main__":
     # : Connect Setting
-    index_name = 'ncu_lrn' # = create name.
+    index_name = 'ncu_test' # = create name.
     es = Elasticsearch(hosts=["http://localhost:9200"])
     
     delete_elasticsearch_index(index_name, es)

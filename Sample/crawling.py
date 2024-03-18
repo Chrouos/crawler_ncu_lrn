@@ -5,6 +5,7 @@ import json
 from collections import deque
 import re
 
+import time
 
 def ncu_crawl(url):
     try:
@@ -78,11 +79,19 @@ def bfs_crawl(root_url, max_depth):
 
 
 if __name__ == '__main__':
+
+    start_time = time.time()
+
     filename = 'result.json'
-    root_url = 'https://www.chinese.ncu.edu.tw'
+    root_url = 'http://lrn.ncu.edu.tw/'
     max_depth = 2
     crawl_results = bfs_crawl(root_url, max_depth)
 
     with open(filename, 'w', encoding='utf-8') as f:    
         json.dump(crawl_results, f, ensure_ascii=False, indent=4)
         print(f"{len(crawl_results)} of data were successfully saved")
+        
+        
+    # @ Done
+    end_time = time.time()
+    print(f"總共花費時間：{end_time - start_time}秒")

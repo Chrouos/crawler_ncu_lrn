@@ -186,12 +186,12 @@ def crawl_bfs(root_url, max_depth, type_value="bs4"):
 if __name__ == "__main__":
     
     # @ Start
-    start_time = time.time()
+    start_time = time()
     
     # : default setting
     root_url = "http://lrn.ncu.edu.tw/"
     save_file_name = "result.json"
-    max_depth = 2
+    max_depth = 3
     
     print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}, 深度: {max_depth}")
     
@@ -203,7 +203,7 @@ if __name__ == "__main__":
         print(f"{len(crawlers_results)} of data were successfully saved")
         
     # @ Done
-    end_time = time.time()
+    end_time = time()
     print(f"總共花費時間：{end_time - start_time}秒")
 
         
