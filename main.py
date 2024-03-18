@@ -191,7 +191,7 @@ if __name__ == "__main__":
     # : default setting
     root_url = "http://lrn.ncu.edu.tw/"
     save_file_name = "result.json"
-    max_depth = 3
+    max_depth = 2
     
     print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}, 深度: {max_depth}")
     
