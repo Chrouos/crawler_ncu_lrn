@@ -3,7 +3,7 @@ from gensim.models import Word2Vec
 import json
 import sys
 
-from model.sentence_embedding import get_sentence_embedding
+from sentence_embedding import get_sentence_embedding
 
 '''
 data = {
@@ -47,8 +47,6 @@ def read_data(data_name):
             embedding_vector = get_sentence_embedding(row['content'])
             row['vector'] = embedding_vector.tolist()
             yield row
-            
-    
 
 def delete_elasticsearch_index(index_name, es):
     

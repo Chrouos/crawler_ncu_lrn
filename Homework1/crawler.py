@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from time import sleep, time
 
+from subprocess import CREATE_NO_WINDOW 
 import requests
 from bs4 import BeautifulSoup
 from collections import deque
@@ -19,6 +20,7 @@ def reload_cookies(url, type_value="bs4"):
     # : user agent setting
     ua = UserAgent()
     user_agent = ua.random
+    
 
     # : option setting
     chrome_opt = Options()
@@ -56,7 +58,7 @@ def reload_cookies(url, type_value="bs4"):
     
     return current_login_cookie, headers, driver
 
-def crawl_ncu_bs4(url, cookies, headers):
+def crawl_ncu_bs4(url, cookies, headers, errors):
     try:
         with requests.Session() as session: 
         # ~ Session can update the performance of the server. 
@@ -96,16 +98,17 @@ def crawl_ncu_bs4(url, cookies, headers):
                     links.append((text,href))
             
         sleep(1)
-        return title, content, links
+        return title, content, links, errors
     except requests.HTTPError as e:
         print('HTTP error', e.response.status_code, url)
+        errors.add(url)
     except requests.RequestException as e:
         print('Request error:', e)
     except Exception as e:
         traceback.print_exc()
         print("Exception:", e)
         
-    return '', '', []
+    return '', '', [], errors
 
 def crawl_ncu_selenium(url):
     
@@ -134,7 +137,7 @@ def crawl_ncu_selenium(url):
             links.append((text, href))
             
     driver.quit()
-    return driver_title, driver_content, links
+    return driver_title, driver_content, links, set()
 
 def crawl_bfs(root_url, max_depth, type_value="bs4"):
     '''
@@ -148,7 +151,8 @@ def crawl_bfs(root_url, max_depth, type_value="bs4"):
     '''
 
     # : default setting
-    visited = set() 
+    visited = set()
+    errors = set() 
     results = []
     
     current_url, depth = root_url, 0
@@ -160,10 +164,10 @@ def crawl_bfs(root_url, max_depth, type_value="bs4"):
             current_url, depth = dq.popleft() 
         
             if depth > max_depth: break # + 停止條件：達到指定的最大深度
-            if current_url in visited: continue # + 如果該 URL 已經訪問過，跳過
+            if current_url in visited or current_url in errors: continue # + 如果該 URL 已經訪問過，跳過
             
             # @ Get the elements of the site. (all the links)
-            title, content, links = crawl_ncu_bs4(current_url, cookies, headers) if type_value == "bs4" else crawl_ncu_selenium(current_url)
+            title, content, links, errors = crawl_ncu_bs4(current_url, cookies, headers, errors) if type_value == "bs4" else crawl_ncu_selenium(current_url)
             if title and content and links:
                 print("Depth:", depth, "URL:", current_url)
                     
@@ -193,7 +197,6 @@ if __name__ == "__main__":
     save_file_name = "result.json"
     max_depth = 2
     
-    print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}, 深度: {max_depth}")
     
     # @ main function
     crawlers_results =  crawl_bfs(root_url, max_depth, type_value="bs4") # type_value="selenium" or "bs4"
@@ -204,6 +207,7 @@ if __name__ == "__main__":
         
     # @ Done
     end_time = time()
+    print(f"=> 存檔名稱: {save_file_name}, 爬取的網站: {root_url}, 深度: {max_depth}")
     print(f"總共花費時間：{end_time - start_time}秒")
 
         

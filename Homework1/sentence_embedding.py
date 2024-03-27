@@ -46,7 +46,10 @@ def get_sentence_embedding(sentence):
     return sentence_embedding.squeeze()
 
 
-def cosine_similarity(a, b):
+def cosine_similarity(aT, bT):
+    a = get_sentence_embedding(aT)
+    b = get_sentence_embedding(bT)
+    
     dot_product = torch.dot(a, b)
     
     norm_a = torch.norm(a, p=2)
